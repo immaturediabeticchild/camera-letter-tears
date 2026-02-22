@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Eye Letter Tears — Fall & Stay</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  background: black;
+  font-family: Arial, sans-serif;
+}
+
+video {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+}
+
+.tear {
+  position: absolute;
+  color: #66ccff;
+  font-size: 40px;
+  font-weight: bold;
+  pointer-events: none;
+  text-shadow: 0 0 15px #66ccff;
+  transition: transform 2.5s linear;
+}
+</style>
+</head>
+<body>
+
+<video id="video" autoplay playsinline></video>
+
+<!-- MediaPipe FaceMesh -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+<script>
+const video = document.getElementById("video");
+
+let leftEye = {x: window.innerWidth/2, y: window.innerHeight/2};
+let rightEye = {x: window.innerWidth/2, y: window.innerHeight/2};
+
+// Start webcam
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(stream => video.srcObject = stream);
+
+// Setup FaceMesh
+const faceMesh = new FaceMesh({
+  locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+});
+
+faceMesh.setOptions({
+  maxNumFaces: 1,
+  refineLandmarks: true,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5
+});
+
+faceMesh.onResults(results => {
+  if (results.multiFaceLandmarks.length > 0) {
+    const landmarks = results.multiFaceLandmarks[0];
+    // Landmark 33 = left eye, 263 = right eye
+    leftEye.x = landmarks[33].x * window.innerWidth;
+    leftEye.y = landmarks[33].y * window.innerHeight;
+    rightEye.x = landmarks[263].x * window.innerWidth;
+    rightEye.y = landmarks[263].y * window.innerHeight;
+  }
+});
+
+// Attach camera to FaceMesh
+const camera = new Camera(video, {
+  onFrame: async () => { await faceMesh.send({ image: video }); },
+  width: 640,
+  height: 480
+});
+camera.start();
+
+// Create tears that fall to bottom and stay
+document.addEventListener("keydown", (event) => {
+  if (event.key.length === 1) createTear(event.key);
+});
+
+function createTear(letter) {
+  const tear = document.createElement("div");
+  tear.className = "tear";
+  tear.textContent = letter;
+
+  // Choose left or right eye
+  const eye = Math.random() > 0.5 ? leftEye : rightEye;
+
+  tear.style.left = eye.x + "px";
+  tear.style.top = eye.y + "px";
+
+  document.body.appendChild(tear);
+
+  // Trigger transition to bottom
+  setTimeout(() => {
+    tear.style.transform = `translateY(${window.innerHeight - eye.y - 20}px)`;
+  }, 10); // small delay to allow initial render
+}
+</script>
+
+</body>
+</html>
