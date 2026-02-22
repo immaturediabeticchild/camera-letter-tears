@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Eye Letter Tears — Fall & Stay</title>
+<title>Eye Letter Tears — Fall to Bottom</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body {
@@ -27,7 +27,7 @@ video {
   font-weight: bold;
   pointer-events: none;
   text-shadow: 0 0 15px #66ccff;
-  transition: transform 2.5s linear;
+  transition: top 2s linear;
 }
 </style>
 </head>
@@ -64,7 +64,6 @@ faceMesh.setOptions({
 faceMesh.onResults(results => {
   if (results.multiFaceLandmarks.length > 0) {
     const landmarks = results.multiFaceLandmarks[0];
-    // Landmark 33 = left eye, 263 = right eye
     leftEye.x = landmarks[33].x * window.innerWidth;
     leftEye.y = landmarks[33].y * window.innerHeight;
     rightEye.x = landmarks[263].x * window.innerWidth;
@@ -80,7 +79,7 @@ const camera = new Camera(video, {
 });
 camera.start();
 
-// Create tears that fall to bottom and stay
+// Create falling tears that stop at bottom
 document.addEventListener("keydown", (event) => {
   if (event.key.length === 1) createTear(event.key);
 });
@@ -90,18 +89,20 @@ function createTear(letter) {
   tear.className = "tear";
   tear.textContent = letter;
 
-  // Choose left or right eye
+  // Randomly choose left or right eye
   const eye = Math.random() > 0.5 ? leftEye : rightEye;
 
+  // Start at eye position
   tear.style.left = eye.x + "px";
   tear.style.top = eye.y + "px";
 
   document.body.appendChild(tear);
 
-  // Trigger transition to bottom
+  // Let it fall to the bottom
   setTimeout(() => {
-    tear.style.transform = `translateY(${window.innerHeight - eye.y - 20}px)`;
-  }, 10); // small delay to allow initial render
+    const bottomY = window.innerHeight - 50; // leave some space at bottom
+    tear.style.top = bottomY + "px";
+  }, 10); // slight delay for transition
 }
 </script>
 
