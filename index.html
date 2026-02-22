@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Eye Letter Tears — Fall to Bottom</title>
+<title>Eye Letter Tears</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body {
@@ -79,7 +79,7 @@ const camera = new Camera(video, {
 });
 camera.start();
 
-// Create falling tears that stop at bottom
+// Create falling letters
 document.addEventListener("keydown", (event) => {
   if (event.key.length === 1) createTear(event.key);
 });
@@ -89,20 +89,19 @@ function createTear(letter) {
   tear.className = "tear";
   tear.textContent = letter;
 
-  // Randomly choose left or right eye
+  // Choose left or right eye
   const eye = Math.random() > 0.5 ? leftEye : rightEye;
 
-  // Start at eye position
   tear.style.left = eye.x + "px";
   tear.style.top = eye.y + "px";
 
   document.body.appendChild(tear);
 
-  // Let it fall to the bottom
+  // Make it fall to bottom
   setTimeout(() => {
-    const bottomY = window.innerHeight - 50; // leave some space at bottom
+    const bottomY = window.innerHeight - 40; // stop near bottom
     tear.style.top = bottomY + "px";
-  }, 10); // slight delay for transition
+  }, 10);
 }
 </script>
 
